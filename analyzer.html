@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ઇન્સ્ટન્ટ ડોક્યુમેન્ટ વેરિફિકેશન સિસ્ટમ</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; }
+        body { background-color: #0f172a; color: #f8fafc; padding: 4px; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .wrapper { width: 100%; max-width: 700px; background: #1e293b; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        header { text-align: center; margin-bottom: 25px; border-bottom: 2px solid #334155; padding-bottom: 15px; }
+        h1 { font-size: 24px; color: #38bdf8; margin-bottom: 8px; }
+        p { color: #94a3b8; font-size: 14px; }
+        
+        /* ફાઇલ અપલોડ બોક્સ */
+        .upload-area { border: 2px dashed #38bdf8; background: #0f172a; padding: 40px 20px; border-radius: 8px; text-align: center; cursor: pointer; transition: 0.3s; margin-bottom: 20px; }
+        .upload-area:hover { background: #1e293b; border-color: #0ea5e9; }
+        .upload-area p { color: #38bdf8; font-size: 16px; font-weight: bold; }
+        input[type="file"] { display: none; }
+
+        /* રીઝલ્ટ બોક્સ */
+        .result-box { display: none; padding: 20px; border-radius: 8px; text-align: center; margin-top: 20px; font-size: 20px; font-weight: bold; animation: fadeIn 0.5s ease; }
+        .legal { background-color: #064e3b; color: #34d399; border: 2px solid #059669; }
+        .fraud { background-color: #7f1d1d; color: #f87171; border: 2px solid #dc2626; }
+        
+        /* ઓડિટ વિગતો */
+        .details-box { display: none; background: #0f172a; padding: 15px; border-radius: 8px; margin-top: 15px; font-size: 14px; text-align: left; line-height: 1.6; border: 1px solid #334155; }
+        .details-box h3 { color: #94a3b8; margin-bottom: 10px; border-bottom: 1px solid #334155; padding-bottom: 5px; }
+        .meta-item { display: flex; justify-content: space-between; margin-bottom: 5px; color: #cbd5e1; }
+        .meta-val { font-weight: bold; color: #f8fafc; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <header>
+        <h1>🔍 ઇન્સ્ટન્ટ ડોક્યુમેન્ટ ફ્રોડ ડિટેક્ટર</h1>
+        <p>🔒 તમારો ડેટા સુરક્ષિત છે. ફાઇલ ક્યાંય સેવ થતી નથી, માત્ર બ્રાઉઝરમાં સ્કેન થાય છે.</p>
+    </header>
+
+    <!-- ફાઇલ સિલેક્શન -->
+    <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+        <p>📄 વેરિફિકેશન માટે અહીં ક્લિક કરી PDF ફાઇલ સિલેક્ટ કરો</p>
+        <span style="font-size: 12px; color: #64748b;">(માત્ર PDF ફોર્મેટ સપોર્ટેડ છે)</span>
+        <input type="file" id="fileInput" accept=".pdf" onchange="analyzeDocument(event)">
+    </div>
+
+    <!-- પરિણામ (Legal અથવા Fraud) -->
+    <div id="result" class="result-box"></div>
+
+    <!-- ટેકનિકલ ઓડિટ રિપોર્ટ -->
+    <div id="details" class="details-box">
+        <h3>📋 ફોરેન્સિક મેટાડેટા ઓડિટ:</h3>
+        <div id="metaContent"></div>
+    </div>
+</div>
+
+<script>
+    function analyzeDocument(event) {
+        const file = event.target.files;
+        if (!file) return;
+
+        const reader = new FileReader();
+        
+        // ફાઇલને બાયનરી ટેક્સ્ટ તરીકે રીડ કરો જેથી આંતરિક સ્ટ્રક્ચર ચેક કરી શકાય
+        reader.onload = function(e) {
+            const fileContent = e.target.result;
+            
+            // ૧. ચેક કરો કે ફાઇલ કયા સોફ્ટવેરમાં બની કે એડિટ થઈ છે
+            const producerMatch = fileContent.match(/\/Producer\s*\((.*?)\)/);
+            const creatorMatch = fileContent.match(/\/Creator\s*\((.*?)\)/);
+            
+            // ૨. મેટાડેટા તારીખો મેળવો
+            const creationDateMatch = fileContent.match(/\/CreationDate\s*\(D:(.*?)\)/);
+            const modDateMatch = fileContent.match(/\/ModDate\s*\(D:(.*?)\)/);
+
+            const producer = producerMatch ? producerMatch : "અજ્ઞાત (Unknown)";
+            const creator = creatorMatch ? creatorMatch : "અજ્ઞાત (Unknown)";
+            const creationDate = creationDateMatch ? parsePDFDate(creationDateMatch) : "ઉપલબ્ધ નથી";
+            const modDate = modDateMatch ? parsePDFDate(modDateMatch) : "ઉપલબ્ધ નથી";
+
+            // ૩. ફ્રોડ ડિટેક્શન લોજિક (મેનિપ્યુલેશન ઇન્ડિકેટર્સ)
+            let isFraud = false;
+            let fraudReason =;
+
+            // જો મોડિફાઇડ ડેટ અને ક્રિએશન ડેટ અલગ હોય (એટલે કે પાછળથી ફાઇલમાં ફેરફાર થયો હોય)
+            if (modDateMatch && creationDateMatch && creationDateMatch !== modDateMatch) {
+                isFraud = true;
+                fraudReason.push("ડોક્યુમેન્ટ બનાવ્યા પછી તેમાં પાછળથી ફેરફાર (Modify) કરવામાં આવ્યો છે.");
+            }
+
+            // જો ઓનલાઇન અજાણ્યા PDF એડિટર્સ પકડાય
+            const suspiciousTools = ["ilovepdf", "smallpdf", "pdfgo", "pdfescape", "nitro", "foxit", "soda", "canva", "];
+            suspiciousTools.forEach(tool => {
+                if (producer.toLowerCase().includes(tool) || creator.toLowerCase().includes(tool)) {
+                    isFraud = true;
+                    fraudReason.push(`આ દસ્તાવેજ ઓનલાઇન થર્ડ-પાર્ટી ટૂલ (${tool}) દ્વારા મોડિફાય કે એડિટ થયેલો જણાય છે.`);
+                }
+            });
+
+            // ૪. પરિણામ સ્ક્રીન પર ડિસ્પ્લે કરવું
+            const resultDiv = document.getElementById('result');
+            const detailsDiv = document.getElementById('details');
+            const metaContent = document.getElementById('metaContent');
+
+            resultDiv.style.display = "block";
+            detailsDiv.style.display = "block";
+
+            if (isFraud) {
+                resultDiv.className = "result-box fraud";
+                resultDiv.innerHTML = "❌ FRAUD DOCUMENT (શંકાસ્પદ / નકલી)";
+            } else {
+                resultDiv.className = "result-box legal";
+                resultDiv.innerHTML = "✅ LEGAL DOCUMENT (અસલ / સુરક્ષિત)";
+            }
+
+            // વિગતવાર રિપોર્ટ ટેબલ બનાવો
+            metaContent.innerHTML = `
+                <div class="meta-item"><span>ફાઇલનું નામ:</span> <span class="meta-val">${file.name}</span></div>
+                <div class="meta-item"><span>સોફ્ટવેર (Producer):</span> <span class="meta-val">${producer}</span></div>
+                <div class="meta-item"><span>બનાવ્યાની તારીખ (Created):</span> <span class="meta-val">${creationDate}</span></div>
+                <div class="meta-item"><span>છેલ્લે ફેરફારની તારીખ (Modified):</span> <span class="meta-val">${modDate}</span></div>
+                <div class="meta-item" style="margin-top:10px; flex-direction:column; align-items:flex-start;">
+                    <span style="color:#94a3b8; font-weight:bold;">નિષ્કર્ષ વિગત:</span>
+                    <span style="color:${isFraud ? '#f87171' : '#34d399'}; margin-top:5px;">
+                        ${isFraud ? '⚠️ ' + fraudReason.join('<br>⚠️ ') : '✔️ આ ફાઇલના આંતરિક સ્ટ્રક્ચરમાં કોઈ અનધિકૃત ફેરફાર જોવા મળ્યો નથી.'}
+                    </span>
+                </div>
+            `;
+        };
+
+        reader.readAsBinaryString(file);
+    }
+
+    // PDF ફોર્મેટની તારીખને વાંચવા યોગ્ય બનાવવાનું ફંક્શન
+    function parsePDFDate(pdfDate) {
+        try {
+            const year = pdfDate.substr(0, 4);
+            const month = pdfDate.substr(4, 2);
+            const day = pdfDate.substr(6, 2);
+            const hours = pdfDate.substr(8, 2);
+            const minutes = pdfDate.substr(10, 2);
+            return `${day}/${month}/${year} ${hours}:${minutes}`;
+        } catch(e) {
+            return pdfDate;
+        }
+    }
+</script>
+
+</body>
+</html>
