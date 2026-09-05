@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ઇન્સ્ટન્ટ ડોક્યુમેન્ટ વેરિફિકેશન સિસ્ટમ</title>
+    <title>ઇન્સ્ટન્ટ ડોક્યુમેન્ટ વેરિફિકેશન અને ફ્રોડ ડિટેક્ટર</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; }
-        body { background-color: #0f172a; color: #f8fafc; padding: 4px; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        body { background-color: #0f172a; color: #f8fafc; padding: 20px; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
         .wrapper { width: 100%; max-width: 700px; background: #1e293b; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
         header { text-align: center; margin-bottom: 25px; border-bottom: 2px solid #334155; padding-bottom: 15px; }
         h1 { font-size: 24px; color: #38bdf8; margin-bottom: 8px; }
@@ -27,7 +27,7 @@
         .details-box { display: none; background: #0f172a; padding: 15px; border-radius: 8px; margin-top: 15px; font-size: 14px; text-align: left; line-height: 1.6; border: 1px solid #334155; }
         .details-box h3 { color: #94a3b8; margin-bottom: 10px; border-bottom: 1px solid #334155; padding-bottom: 5px; }
         .meta-item { display: flex; justify-content: space-between; margin-bottom: 5px; color: #cbd5e1; }
-        .meta-val { font-weight: bold; color: #f8fafc; }
+        .meta-val { font-weight: bold; color: #f8fafc; word-break: break-all; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -37,7 +37,7 @@
 <div class="wrapper">
     <header>
         <h1>🔍 ઇન્સ્ટન્ટ ડોક્યુમેન્ટ ફ્રોડ ડિટેક્ટર</h1>
-        <p>🔒 તમારો ડેટા સુરક્ષિત છે. ફાઇલ ક્યાંય સેવ થતી નથી, માત્ર બ્રાઉઝરમાં સ્કેન થાય છે.</p>
+        <p>🔒 તમારો ડેટા સુરક્ષિત છે. ફાઇલ ક્યાંય સેવ થતી નથી, માત્ર તમારા બ્રાઉઝરમાં સ્કેન થાય છે.</p>
     </header>
 
     <!-- ફાઇલ સિલેક્શન -->
@@ -88,7 +88,7 @@
             // જો મોડિફાઇડ ડેટ અને ક્રિએશન ડેટ અલગ હોય (એટલે કે પાછળથી ફાઇલમાં ફેરફાર થયો હોય)
             if (modDateMatch && creationDateMatch && creationDateMatch !== modDateMatch) {
                 isFraud = true;
-                fraudReason.push("ડોક્યુમેન્ટ બનાવ્યા પછી તેમાં પાછળથી ફેરફાર (Modify) કરવામાં આવ્યો છે.");
+                fraudReason.push("ડોક્યુમેન્ટ બનાવ્યા પછી તેમાં પાછળથી છેડછાડ (Modify) કરવામાં આવી છે.");
             }
 
             // જો ઓનલાઇન અજાણ્યા PDF એડિટર્સ પકડાય
@@ -96,7 +96,7 @@
             suspiciousTools.forEach(tool => {
                 if (producer.toLowerCase().includes(tool) || creator.toLowerCase().includes(tool)) {
                     isFraud = true;
-                    fraudReason.push(`આ દસ્તાવેજ ઓનલાઇન થર્ડ-પાર્ટી ટૂલ (${tool}) દ્વારા મોડિફાય કે એડિટ થયેલો જણાય છે.`);
+                    fraudReason.push(`આ દસ્તાવેજ ઓનલાઇન કે અજાણ્યા થર્ડ-પાર્ટી ટૂલ (${tool}) દ્વારા એડિટ થયેલો જણાય છે.`);
                 }
             });
 
@@ -125,7 +125,7 @@
                 <div class="meta-item" style="margin-top:10px; flex-direction:column; align-items:flex-start;">
                     <span style="color:#94a3b8; font-weight:bold;">નિષ્કર્ષ વિગત:</span>
                     <span style="color:${isFraud ? '#f87171' : '#34d399'}; margin-top:5px;">
-                        ${isFraud ? '⚠️ ' + fraudReason.join('<br>⚠️ ') : '✔️ આ ફાઇલના આંતરિક સ્ટ્રક્ચરમાં કોઈ અનધિકૃત ફેરફાર જોવા મળ્યો નથી.'}
+                        ${isFraud ? '⚠️ ' + fraudReason.join('<br>⚠️ ') : '✔️ આ ફાઇલના આંતરિક મેટાડેટામાં કોઈ અનધિકૃત ફેરફાર જોવા મળ્યો નથી.'}
                     </span>
                 </div>
             `;
